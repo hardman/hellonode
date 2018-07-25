@@ -1,0 +1,27 @@
+{
+    "name": "koa-hello",
+    "version": "1.0.0",
+    "description": "hello world for koa2",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "keywords": [
+        "koa2"
+    ],
+    "author": "awstar",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "-"
+    },
+    "debug": true,
+    "dependencies": {
+        "koa": "2.0.0",
+        "koa-router": "7.0.0",
+        "koa-bodyparser": "3.2.0",
+        "ejs": "2.5.8",
+        "mysql": "2.11.1",
+        "sequelize": "3.24.1"
+    }
+}
