@@ -17,11 +17,13 @@
     },
     "debug": true,
     "dependencies": {
-        "koa": "2.0.0",
-        "koa-router": "7.0.0",
-        "koa-bodyparser": "3.2.0",
-        "ejs": "2.5.8",
-        "mysql": "2.11.1",
-        "sequelize": "3.24.1"
+        "koa": "2.5.2",
+        "koa-router": "7.4.0",
+        "koa-bodyparser": "4.2.1",
+        "ejs": "2.6.1",
+        "mysql": "2.16.0",
+        "sequelize": "4.38.0",
+        "request": "2.87.0",
+        "koa-session": "5.8.2"
     }
 }

@@ -26,6 +26,42 @@ let login = async (ctx, next)=> {
 
 //注册
 let register = async (ctx, next) => {
+	//取参数
+	let wxcode = ctx.request.body.code;
+	if(!wxcode){
+		ctx.response.body = response.error(response.codes.invalidParams, '需要参数code');
+		return;
+	}
+
+	let config = require('../utils/config');
+	let request = require('../utils/request');
+	let ret = await request.get(
+		{
+			url: 'https://api.weixin.qq.com/sns/jscode2session',
+			params: {
+				appid: config.wx.appid,
+				secret: config.wx.appsecret,
+				js_code: wxcode,
+				grant_type: 'authorization_code'
+			}
+		}
+	)
+
+	if(ret.body){
+		console.log(`请求wxjscode2session 成功 ${ret}`);
+		ctx.session.sessionKey = ret.body.session_key;
+		ctx.session.openid = ret.body.openid;
+
+		ctx.response.body = response.succ({}, 'ok');
+	}else{
+		console.log(`请求wxjscode2session 失败 ${ret.error} ${ret.statusCode}`);
+		ctx.response.body = response.error(ret.statusCode, '请求失败')
+	}
+
+	return;
+
+
+	let userModel = require('../models/user');
 	ctx.response.type = 'application/json';
 	ctx.response.body = response.error(-100, "数据不存在");
 }
@@ -33,5 +69,6 @@ let register = async (ctx, next) => {
 module.exports = {
 	'GET /auth': auth,
 	'POST /login': login,
+	'POST /register': register,
 	'GET /register': register
 }

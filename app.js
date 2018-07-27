@@ -11,6 +11,10 @@ app.use(errorHandle.internalerror());
 const timecost = require('./midwares/timeCost')();
 app.use(timecost);
 
+//session
+const session = require('./midwares/session');
+app.use(session(app));
+
 //static
 const staticmd = require('./midwares/static')();
 app.use(staticmd);
