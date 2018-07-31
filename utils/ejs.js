@@ -4,7 +4,8 @@ const fs = require('fs');
 
 module.exports = {
 	render : (file, data) => {
-		let content = fs.readFileSync(__dirname + '/../views/' + file + '.ejs');
+		let filename = __dirname + '/../views/' + file + '.ejs';
+		let content = fs.readFileSync(filename);
 		console.log(` -- content= ${content}`);
 		if (!data) {
 			return content;
@@ -12,7 +13,8 @@ module.exports = {
 		if (!content) {
 			return undefined;
 		}
-		let renderHtml = ejs.render(String(content), data);
+		let params = Object.assign({}, data, {filename: filename});
+		let renderHtml = ejs.render(String(content), params);
 		return renderHtml;
 	}
 }
