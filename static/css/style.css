@@ -153,36 +153,70 @@ input,
 select {
   vertical-align: middle;
 }
-/*
-<div class="if-title">
-    <p class="if-name">请选择</p>
-    <a class="if-btn" href="onSelect()">点此选择</a>
-    <textarea class="if-text">empty</textarea>
-</div>
-*/
+.it-border {
+  border-radius: 4px;
+  border: 1px solid #c1c1c1;
+}
 .if-title {
   background-color: clear;
   margin: 30px auto;
   width: 800px;
+  font-size: 0;
 }
 .if-name {
   display: inline-block;
   font: 16px/30px "Microsoft YaHei";
-  width: auto;
+  width: 698px;
+  padding-left: 10px;
+  position: relative;
+  border-radius: 4px;
+  border: 1px solid #c1c1c1;
 }
 .if-btn {
   display: inline-block;
   width: 80px;
   height: 30px;
   font: 16px/30px "Microsoft YaHei";
-  background-color: #00ffff;
+  background-color: #000;
   color: white;
   text-align: center;
   text-decoration: none;
+  margin-left: 8px;
 }
 .if-btn:hover {
-  background-color: #00eeee;
+  color: whitesmoke;
 }
-.if-text {
-  border: none;
+#if-text {
+  font: 16px/30px "Microsoft YaHei";
+  margin-top: 10px;
+  padding-left: 10px;
+  height: 300px;
+  display: div;
+  border-radius: 4px;
+  border: 1px solid #c1c1c1;
+}
+.if-list {
+  position: absolute;
+  width: 100%;
+  height: 200px;
+  border: 1px solid #c1c1c1;
+  border-color: transparent #c1c1c1 #c1c1c1 #c1c1c1;
+  border: 1px solid;
+  background-color: antiquewhite;
+  margin-left: -10px;
+  list-style: none;
+}
+.if-list-item {
+  font-size: 0;
+  color: black;
+}
+.if-list-item a {
+  font: 14px/30px "Microsoft YaHei";
+  padding-left: 10px;
+}
+.if-list-item:hover {
+  background-color: gray;
+}
+.hide {
+  display: none;
 }

@@ -1,9 +1,16 @@
 <%- include('header')  %>
 
 <div class="if-title">
-    <p class="if-name">请选择</p>
-    <a class="if-btn" href="onSelect()">点此选择</a>
-    <p class="if-text">empty</p>
+    <div class="if-name">请选择
+        <ul class="if-list">
+            <% controllers.forEach(function(item) { %>
+                <li class="if-list-item"><a><%= item.name %></a></li>
+            <% }); %>
+        </ul>
+    </div>
+    <a class="if-btn" href="">点此选择</a>
+    <pre id="if-text">empty</pre>
 </div>
+
 
 <%- include('footer')  %>
