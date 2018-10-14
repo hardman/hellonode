@@ -3,7 +3,7 @@ const sequelize = require('../utils/sequelize');
 
 module.exports = sequelize.define('user', {
     id: {
-        type: Sequelize.STRING(50),
+        type: Sequelize.INTEGER,
         primaryKey: true
     },
     uid: {
@@ -12,11 +12,16 @@ module.exports = sequelize.define('user', {
     },
     username:Sequelize.STRING(100),
     avatar: Sequelize.STRING(256),
-    mobile: Sequelize.STRING(20),
-    email: Sequelize.STRING(256),
-    openid: Sequelize.STRING(256),
-    createdAt: Sequelize.BIGINT,
-    updatedAt: Sequelize.BIGINT
+    gender: Sequelize.TINYINT,
+    language: Sequelize.STRING(16),
+    city: Sequelize.STRING(32),
+    province: Sequelize.STRING(32),
+    country: Sequelize.STRING(32),
+    createdat: Sequelize.BIGINT,
+    updatedat: Sequelize.BIGINT,
+    logintimes: Sequelize.INTEGER,
+    wxopenid: Sequelize.STRING(256),
+    device: Sequelize.STRING(50)
 }, {
     timestamps: false
 });

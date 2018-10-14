@@ -1,14 +1,9 @@
-let mysqlConfig = {
-    database: 'koaminigame',
-    username: 'wanghy',
-    password: 'wang@1234',
-    host: 'localhost',
-    port: 3306
-}
+
+const config = require('./config');
 
 const Sequelize = require('sequelize');
 
-module.exports = new Sequelize(mysqlConfig.database, mysqlConfig.username, mysqlConfig.password, {
+module.exports = new Sequelize(config.mysql.database, config.mysql.username, config.mysql.password, {
     host: config.host,
     dialect: 'mysql',
     pool: {

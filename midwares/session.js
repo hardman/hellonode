@@ -2,6 +2,7 @@
 const Session = require('koa-session');
 
 module.exports = (app) => { 
+    app.keys = ['sessionforhellonode'];
     return Session(
         {
             key:'koa:sess',

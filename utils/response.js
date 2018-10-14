@@ -1,10 +1,5 @@
-const errorCodes = {
-    succ: 0,//成功
-    invalidParams: 400,//参数错误
-    needLogin: 401,//需要登录
-    requestFrenquently: 402,//请求频繁
-    internalError: 500,//内部错误
-}
+
+let Error = require('./error');
 
 function error(code, msg = null, ext = null){
     let ret = {
@@ -24,7 +19,7 @@ function error(code, msg = null, ext = null){
 
 function succ(data, msg = null, ext = null){
     let ret = {
-        code: errorCodes.succ,
+        code: Error.codes.server.succ,
         data: data
     }
 
@@ -40,7 +35,6 @@ function succ(data, msg = null, ext = null){
 }
 
 module.exports = {
-    codes: errorCodes,
     error: error,
     succ: succ,
 }

@@ -21,9 +21,11 @@
         "koa-router": "7.4.0",
         "koa-bodyparser": "4.2.1",
         "ejs": "2.6.1",
-        "mysql": "2.16.0",
+        "mysql2": "1.6.1",
         "sequelize": "4.38.0",
         "request": "2.87.0",
-        "koa-session": "5.8.2"
+        "koa-session": "5.8.2",
+        "memcache": "0.3.0",
+        "koa2-cors": "2.0.6"
     }
 }
