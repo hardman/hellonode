@@ -39,12 +39,20 @@ function testMemcache(){
     memcache.test();
 }
 
+function testTool(){
+    memcache.start();
+    setTimeout(async ()=>{
+        const tool = require('./models/tool');
+        await tool.test();
+    }, 3000);
+}
+
 //测试代码都写在test函数内
 let test = () => {
     // testAsync();
-    testMemcache();
+    // testMemcache();
     // console.log(process);
-    
+    testTool()
 }
 
 module.exports = {
