@@ -1,40 +1,57 @@
 
-function Error(code, msg){
-    this.code = code;
-    this.msg = msg;
+class MyError extends Error{
+    constructor(code, msg, ext = null){
+        super(msg);
+        this.code = code;
+        this.msg = msg;
+        this.ext = ext;
+    }
 }
 
-Error.assertType = (v, type, msg) => {
+MyError.assertType = (v, type, msg) => {
     if(typeof(v) != type){
-        throw new Error(Error.codes.invalidParams, msg || `${typeof(v)} != ${type}`);
+        throw new MyError(MyError.codes.invalidParams, msg || `${typeof(v)} != ${type}`);
     }
 }
 
-Error.assertValue = (v, v1, msg) => {
+MyError.assertValue = (v, v1, msg) => {
     if(v != v1){
-        throw new Error(Error.codes.invalidParams, msg || `${v} != ${v1}`);
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} != ${v1}`);
     }
 }
 
-Error.assertValueExist = (v, msg) => {
+MyError.assertValueExist = (v, msg) => {
     if(!v){
-        throw  new Error(Error.codes.invalidParams, msg || `${v} == undefined`);
+        throw  new MyError(MyError.codes.invalidParams, msg || `${v} == undefined`);
     }
 }
 
-Error.prototype[Symbol.toString] = function () {
-    console.log(`code=${code}, msg=${msg}`);
+MyError.prototype[Symbol.toString] = function () {
+    console.log(`code=${this.code}, msg=${this.msg} ${this.ext ? this.ext : ''}`);
 }
 
-Error.codes = {
+MyError.codes = {
     server: {
         succ: 0,//成功
         invalidParams: 400,//参数错误
         needLogin: 401,//需要登录
         requestFrenquently: 402,//请求频繁
         notFound: 404,//未找到
+        notEnough:405,//数量不足
         internalError: 500,//内部错误
+    },
+    login: {
+        noOpenid: 1001,
+        wechatSessionKeyRequestFailed: 1002,
+        modelError: 1003,
+    },
+    memcache: {
+        noConnect: 1004,
+        noResult: 1005
+    },
+    request: {
+        requestFailed: 1006
     }
 }
 
-module.exports = Error;
+module.exports = MyError;

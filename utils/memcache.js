@@ -6,6 +6,8 @@ process.EventEmitter = events.EventEmitter;
 let memcache = require('memcache');
 let config = require('./config');
 
+let Error = require('../utils/error');
+
 let mc = {
     connected: false,
     client: null,
@@ -40,22 +42,22 @@ let mc = {
     async get(key){
         return await new Promise((resolve, reject) => {
             if(!this.connected){
-                reject('noconnect');
+                reject(new Error(Error.codes.memcache.noConnect, 'no connect'));
                 return;
             }
             this.client.get(key, (err, result) => {
                 if(err || !result){
-                    reject(err || 'noresult');
+                    reject(err || new Error(Error.codes.memcache.noResult, 'no result'));
                 }else{
                     try{
                         let obj = JSON.parse(result);
                         if(obj.value) {
                             resolve(obj.value);
                         }else{
-                            reject('noresult');
+                            reject(new Error(Error.codes.memcache.noResult, 'no result'));
                         }
                     }catch(err){
-                        reject(err || 'noresult');
+                        reject(err || new Error(Error.codes.memcache.noResult, 'no result'));
                     }
                 }
             });
@@ -65,7 +67,7 @@ let mc = {
     async set(key, value, lifetime, flags) {
         return await new Promise((resolve, reject) => {
             if(!this.connected){
-                reject('noconnect');
+                reject(new Error(Error.codes.memcache.noConnect, 'no connect'));
                 return;
             }
             this.client.set(key, JSON.stringify({value}), (err, result) => {
@@ -76,6 +78,23 @@ let mc = {
                 }
             }, lifetime, flags);
         });
+    },
+
+    async delete(key){
+        return await new Promise((resolve, reject) => {
+            if(!this.connected){
+                reject(new Error(Error.codes.memcache.noConnect, 'no connect'));
+                return;
+            }
+
+            this.client.delete(key, (err, result) => {
+                if(err){
+                    reject(err);
+                }else{
+                    resolve(result);
+                }
+            });
+        })
     },
 
     async test(){

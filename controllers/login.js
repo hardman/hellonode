@@ -6,22 +6,29 @@ const Error = require('../utils/error');
 const User = require('../models/user');
 const config = require('../utils/config');
 
+/**
+ * 微信登录会传入临时code，用临时code通过微信接口获取session_key和openid
+ * 
+ * 登录使用wechat，session_key作为memcache的key，value是openId
+ * 然后sessionKeyMd5存到session中，作为登录凭证。
+ * 
+ * 登录后从数据库获取个人资料，取到后，放入memcached
+ */
+
 let _isLogin = (ctx) => {
 	return !!(ctx.session && ctx.session.session_key);
 }
 
 let _getOpenId = async (ctx) => {
 	if(_isLogin(ctx)){
-		return await memcache.get(ctx.session.session_key);
+		try{
+			return await memcache.get(ctx.session.session_key);
+		}catch(e){
+			return null;
+		}
 	}else{
 		return null;
 	}
-}
-
-let _loginFailedCode = {
-	noOpenid: 1001,
-	wechatSessionKeyRequestFailed: 1002,
-	modelError: 1003,
 }
 
 let _loginFailed = (ctx, code, msg) => {
@@ -32,72 +39,35 @@ let _loginFailed = (ctx, code, msg) => {
 let _loginSucc = async (ctx, openid) => {
 	if(openid){
 		//更新数据库 & 返回数据信息
-		try{
-			let user = null;
-
-			//在memcache里查找
+		let user = await User.findUser(openid);
+		let reqBody = ctx.request.body;
+		if(!user){
+			let createParams = Object.assign({createat: Date.now(), updatedat: Date.now()}, reqBody);
+			user = await User.createUser(openid, createParams);
+		}else{
+			//检查是否需要update
+			let updateUser = null;
 			try{
-				user = await memcache.get(openid);
+				updateUser = await User.updateUser(openid, reqBody);
 			}catch(e){
 				//do nothing
 			}
-
-			if(!user){
-				//memcache没有，去数据库查找
-				let users = null;
-				try{
-					users = await User.findAll({
-						where:{
-							wxopenid: openid
-						}
-					});
-				}catch(e){
-					//do nothing	
-				}
-				if(!users || users.length <= 0){
-					//没有找到，则在数据库创建
-					let reqBody = ctx.request.body;
-					user = await User.create({
-						uid: openid,
-						username: reqBody.nickName,
-						avatar: reqBody.avatarUrl,
-						gender: reqBody.gender,
-						language: reqBody.language,
-						city: reqBody.city,
-						province: reqBody.province,
-						country: reqBody.country,
-						createdat: Date.now(),
-						updatedat: Date.now(),
-						logintimes: 1
-					});
-				}else{
-					//数据库中存在，直接取出
-					user = users.shift();
-				}
-				if(user){
-					//重新读取数据库，获取自动生成的部分col
-					try{
-						user = await User.findOne({
-							where: {
-								uid: openid
-							}
-						})
-					}catch(e){
-						//do nothing
-					}
-					//存储到memcache
-					await memcache.set(openid, user);
-				}
+			if(updateUser){
+				user = updateUser;
 			}
+		}
+		if(user){
+			//登录记录
+			await User.loginRecord(openid);
 			//返回给客户端
 			ctx.response.body = response.succ({
 				userinfo: user
 			}, "ok");
-		} catch(e) {
-			_loginFailed(ctx, _loginFailedCode.modelError, 'model创建错误');
+		}else{
+			_loginFailed(ctx, Error.codes.login.modelError, 'model创建错误');
 		}
 	}else{
-		_loginFailed(ctx, _loginFailedCode.noOpenid, 'session_key丢失');
+		_loginFailed(ctx, Error.codes.login.noOpenid, 'session_key丢失');
 	}
 }
 
@@ -149,7 +119,7 @@ let login = async (ctx, next) => {
 				}
 			)
 		}catch(err){
-			_loginFailed(ctx, _loginFailedCode.wechatSessionKeyRequestFailed, `微信sessionkey接口请求失败 network ${err}`);
+			_loginFailed(ctx, Error.codes.login.wechatSessionKeyRequestFailed, `微信sessionkey接口请求失败 network ${err}`);
 		}
 
 		retBody = ret.body;
@@ -171,8 +141,22 @@ let login = async (ctx, next) => {
 		await _loginSucc(ctx, retBody.openid);
 	}else{
 		console.log(`请求wxjscode2session 失败 ${JSON.stringify(ret)} ${ret.error} ${ret.statusCode}`);
-		_loginFailed(ctx, _loginFailedCode.wechatSessionKeyRequestFailed, `微信sessionkey接口请求失败 data ${ret.error} ${ret.statusCode}`);
+		_loginFailed(ctx, Error.codes.login.wechatSessionKeyRequestFailed, `微信sessionkey接口请求失败 data ${ret.error} ${ret.statusCode}`);
 	}
+}
+
+//退出登录
+let logout = async (ctx, next) => {
+	if(_isLogin(ctx)){
+		let sessionKeyMd5 = ctx.session.session_key;
+		try{
+			await memcache.delete(sessionKeyMd5);
+		}catch(e){
+			//do nothing
+		}
+		ctx.session = false;
+	}
+	ctx.response.body = response.succ({}, "ok");
 }
 
 let getUserInfo = async (ctx, next) => {
@@ -184,25 +168,8 @@ let getUserInfo = async (ctx, next) => {
 
 	let openid = await _getOpenId();
 
-	//在memcache里查找
-	try{
-		user = await memcache.get(openid);
-	}catch(e){
-		//do nothing
-	}
+	let user = await User.findUser(openid);
 
-	if(!user){
-		//memcache没有，去数据库查找
-		try{
-			user = await User.findOne({
-				where:{
-					uid: openid
-				}
-			});
-		}catch(e){
-			//do nothing	
-		}
-	}
 	if(user){
 		ctx.response.body = response.succ(user, 'ok');
 	}else{
@@ -212,5 +179,6 @@ let getUserInfo = async (ctx, next) => {
 
 module.exports = {
 	'POST /login': login,
+	'GET /logout': logout,
 	'GET /getUserInfo': getUserInfo
 }

@@ -1,5 +1,6 @@
 const request = require('request');
 const Qs = require('qs');
+const Error = require('../utils/error');
 
 let get = function({url, params}){
     return new Promise((resolve, reject) => {
@@ -13,7 +14,7 @@ let get = function({url, params}){
                 if(res.statusCode == 200) {
                     resolve({body});
                 } else {
-                    reject({error: err, statusCode: res.statusCode || 0});
+                    reject(new Error(res.statusCode || 0, 'get error', err));
                 }
             }
         )
@@ -36,7 +37,7 @@ let post = function({url, params}) {
                 if(res.statusCode == 200) {
                     resolve({body});
                 } else {
-                    reject({error: err, statusCode: res.statusCode || 0});
+                    reject(new Error(res.statusCode || 0, 'get error', err));
                 }
             }
         )
