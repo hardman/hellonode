@@ -43,14 +43,18 @@ let initTool = async () => {
 //道具信息
 //===============
 let toolInfo = sequelize.define('toolinfo', {
+    id: {
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        defaultValue: 0
+    },
     uid:{
         type: Sequelize.STRING(50),
-        unique: true
+        allowNull: false
     },
     toolid: {
         type: Sequelize.STRING(16),
-        primaryKey: true,
-        unique: true,
         allowNull: false
     },
     count: {
@@ -68,6 +72,21 @@ let addTool = async (uid, toolid, count) => {
     })
 }
 
+//获取全部道具
+let getAllTools = async (uid) => {
+    let tools = await toolInfo.findAll({
+        where:{
+            uid
+        }
+    });
+
+    if(!tools) {
+        throw new Error(Error.server.codes.notEnough, 'no tool');
+    }
+
+    return tools;
+}
+
 //获取道具
 let getTool = async (uid, toolid) => {
     let tool = await toolInfo.findOne({
@@ -77,7 +96,7 @@ let getTool = async (uid, toolid) => {
     });
     
     if(!tool) {
-        throw 'no tool';
+        throw new Error(Error.server.codes.notEnough, 'no tool');
     }
 
     return tool;
@@ -87,7 +106,7 @@ let getTool = async (uid, toolid) => {
 let useTool = async (uid, toolid, usecount) => {
     let tool = null;
     try{
-        tool = await getTool();
+        tool = await getTool(uid, toolid);
     }catch(e){
         //do nothing
     }
@@ -110,5 +129,6 @@ module.exports = {
     initTool,//初始化道具配置表
     addTool,//增加道具
     getTool,//获得道具
+    getAllTools,//获得所有道具
     useTool//使用道具
 }

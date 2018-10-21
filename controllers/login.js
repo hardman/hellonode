@@ -1,10 +1,9 @@
 
 const response = require('../utils/response');
-const crypto = require('../utils/crypto');
-const memcache = require('../utils/memcache');
 const Error = require('../utils/error');
 const User = require('../models/user');
 const config = require('../utils/config');
+const loginSession = require('../utils/loginSession');
 
 /**
  * 微信登录会传入临时code，用临时code通过微信接口获取session_key和openid
@@ -14,22 +13,6 @@ const config = require('../utils/config');
  * 
  * 登录后从数据库获取个人资料，取到后，放入memcached
  */
-
-let _isLogin = (ctx) => {
-	return !!(ctx.session && ctx.session.session_key);
-}
-
-let _getOpenId = async (ctx) => {
-	if(_isLogin(ctx)){
-		try{
-			return await memcache.get(ctx.session.session_key);
-		}catch(e){
-			return null;
-		}
-	}else{
-		return null;
-	}
-}
 
 let _loginFailed = (ctx, code, msg) => {
 	console.log(`login failed code=${code} msg=${msg}`);
@@ -84,8 +67,8 @@ let login = async (ctx, next) => {
 	//参数检查
 	_checkParams(ctx);
 	//登录检查
-	if(_isLogin(ctx)) {
-		await _loginSucc(ctx, await _getOpenId());
+	if(loginSession.isLogin(ctx)) {
+		await _loginSucc(ctx, await loginSession.getOpenId());
 		return;
 	}
 	//取参数
@@ -131,12 +114,7 @@ let login = async (ctx, next) => {
 	if(retBody && retBody.openid && retBody.session_key){
 		console.log(`请求wxjscode2session 成功 ${retBody}`);
 
-		//openid + md5 存在session中
-		let sessionkeyMd5 = crypto.md5(retBody.session_key);
-		ctx.session.session_key = sessionkeyMd5;
-
-		//openid存储在memcache中
-		memcache.set(sessionkeyMd5, retBody.openid, 86400000); //24 * 60 * 60 * 1000)
+		await loginSession.addSession(ctx, retBody.openid, retBody.session_key);
 		
 		await _loginSucc(ctx, retBody.openid);
 	}else{
@@ -147,26 +125,19 @@ let login = async (ctx, next) => {
 
 //退出登录
 let logout = async (ctx, next) => {
-	if(_isLogin(ctx)){
-		let sessionKeyMd5 = ctx.session.session_key;
-		try{
-			await memcache.delete(sessionKeyMd5);
-		}catch(e){
-			//do nothing
-		}
-		ctx.session = false;
-	}
+	await loginSession.removeSession(ctx);
 	ctx.response.body = response.succ({}, "ok");
 }
 
+//获取用户信息
 let getUserInfo = async (ctx, next) => {
 	//登录检查
-	if(!_isLogin(ctx)) {
+	if(!loginSession.isLogin(ctx)) {
 		_loginFailed(ctx, Error.codes.server.needLogin, '未登录');
 		return;
 	}
 
-	let openid = await _getOpenId();
+	let openid = await loginSession.getOpenId();
 
 	let user = await User.findUser(openid);
 
