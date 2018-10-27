@@ -20,6 +20,18 @@ MyError.assertValue = (v, v1, msg) => {
     }
 }
 
+MyError.assertEqual = (v, v1, msg) => {
+    if(v != v1){
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} != ${v1}`);
+    }
+}
+
+MyError.assertNotEqual = (v, v1, msg) => {
+    if(v == v1){
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} == ${v1}`);
+    }
+}
+
 MyError.assertValueExist = (v, msg) => {
     if(!v){
         throw  new MyError(MyError.codes.invalidParams, msg || `${v} == undefined`);

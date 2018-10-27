@@ -67,8 +67,8 @@ let login = async (ctx, next) => {
 	//参数检查
 	_checkParams(ctx);
 	//登录检查
-	if(loginSession.isLogin(ctx)) {
-		await _loginSucc(ctx, await loginSession.getOpenId());
+	if(await loginSession.isLogin(ctx)) {
+		await _loginSucc(ctx, await loginSession.getOpenId(ctx));
 		return;
 	}
 	//取参数
@@ -132,12 +132,12 @@ let logout = async (ctx, next) => {
 //获取用户信息
 let getUserInfo = async (ctx, next) => {
 	//登录检查
-	if(!loginSession.isLogin(ctx)) {
+	if(! await loginSession.isLogin(ctx)) {
 		_loginFailed(ctx, Error.codes.server.needLogin, '未登录');
 		return;
 	}
 
-	let openid = await loginSession.getOpenId();
+	let openid = await loginSession.getOpenId(ctx);
 
 	let user = await User.findUser(openid);
 

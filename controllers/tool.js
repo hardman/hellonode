@@ -4,12 +4,21 @@ const Error = require('../utils/error');
 const toolModel = require('../models/tool');
 
 let _checkLoginAndGetOpenId = async (ctx) => {
-    if(!loginSession.isLogin(ctx)) {
+    if(! await loginSession.isLogin(ctx)) {
         ctx.response.body = response.error(Error.codes.server.needLogin, '需要登录');
         return;
     }
     //获取uid
-    return await loginSession.getOpenId();
+    return await loginSession.getOpenId(ctx);
+}
+
+let getToolConfigs = async (ctx, next) => {
+    let toolsconfigs = await toolModel.getAllToolConfigs();
+    if(Array.isArray(toolsconfigs)){
+        ctx.response.body = response.succ({toolsconfigs}, 'ok');
+    }else{
+        ctx.response.body = response.error(Error.codes.server.notEnough, `getAllToolConfigs()数量为0`);
+    }
 }
 
 //所有道具
@@ -21,7 +30,7 @@ let getAllTools = async (ctx, next) => {
     //获取uid
     let tools = await toolModel.getAllTools(uid);
     if(Array.isArray(tools)){
-        ctx.response.body = response.success({tools}, 'ok');
+        ctx.response.body = response.succ({tools}, 'ok');
     }else{
         ctx.response.body = response.error(Error.codes.server.notEnough, `getAllTools(${uid})数量为0`);
     }
@@ -43,21 +52,22 @@ let getTool = async (ctx, next) => {
 }
 
 let useTool = async (ctx, next) => {
-    Error.assertType(ctx.request.query.toolId, 'string', 'need params toolId is string');
-    Error.assertType(ctx.request.query.count, 'integer', 'need params count is integer');
+    Error.assertType(ctx.request.body.toolId, 'string', 'need params toolId is string');
+    Error.assertNotEqual(Number.parseInt(ctx.request.body.count), Number.NaN, 'need params count is integer');
     let uid = await _checkLoginAndGetOpenId(ctx);
     if(!uid) {
         return;
     }
-    let useSucc = await toolModel.useTool(uid, ctx.request.query.toolId, ctx.request.query.count);
+    let useSucc = await toolModel.useTool(uid, ctx.request.body.toolId, ctx.request.body.count);
     if(useSucc){
-        ctx.respons.body = response.success({}, 'ok');
+        ctx.response.body = response.succ({}, 'ok');
     }else{
-        ctx.respons.body = response.error(Error.codes.server.notEnough, '道具使用失败');
+        ctx.response.body = response.error(Error.codes.server.notEnough, '道具使用失败');
     }
 }
 
 module.exports = {
+    'GET /getalltoolconfigs': getToolConfigs,
 	'GET /getalltools': getAllTools,
 	'GET /gettool': getTool,
 	'POST /usetool': useTool

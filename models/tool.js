@@ -107,15 +107,25 @@ let toolInfo = sequelize.define('toolinfo', {
     timestamps: false
 });
 
+toolInfo.belongsTo(toolConfig, {foreignKey: 'toolid', targetKey: 'toolid'});
+
 //获取道具
 let getTool = async (uid, toolid) => {
     let tool = await toolInfo.findOne({
         where: {
             uid,toolid
-        }
+        },
+        include: [
+            {model: toolConfig, required: true}
+        ]
     });
 
-    return tool;
+    return {
+        toolid: tool.toolid,
+        toolname: tool.toolconfig.toolname,
+        des: tool.toolconfig.des,
+        count: tool.count
+    };
 }
 
 //添加道具
@@ -146,10 +156,20 @@ let getAllTools = async (uid) => {
     let tools = await toolInfo.findAll({
         where:{
             uid
-        }
+        },
+        include: [
+            {model: toolConfig, required: true}
+        ]
     });
 
-    return tools;
+    return tools.map((v) => {
+        return {
+            toolid: v.toolid,
+            toolname: v.toolconfig.toolname,
+            des: v.toolconfig.des,
+            count: v.count
+        }
+    })
 }
 
 //使用道具
@@ -240,5 +260,6 @@ module.exports = {
     getTool,//获得道具
     getAllTools,//获得所有道具
     useTool,//使用道具,
+    getAllToolConfigs,//道具配置
     test
 }

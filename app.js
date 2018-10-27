@@ -18,8 +18,11 @@ const app = new Koa();
 let cors = require('koa2-cors');
 app.use(cors({
     origin: (ctx) => {
-        return '*';
-    }
+        return "http://localhost:7456";
+    },
+    credentials: true,
+    exposeHeaders: ["sessionkey", "removesessionkey"],
+    allowHeaders: ["sessionkey", "removesessionkey"]
 }));
 
 const errorHandle = require('./midwares/errorHandle');
@@ -68,4 +71,9 @@ https.createServer({
 console.log(`https app started at port ${config.server.port}`)
 
 //memcache
-memcache.start();
+memcache.start((connected) => {
+    if(connected){
+        let toolModel = require('./models/tool');
+        toolModel.initTool();
+    }
+});

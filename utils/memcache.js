@@ -76,7 +76,7 @@ let mc = {
                 }else{
                     resolve(result);
                 }
-            }, lifetime, flags);
+            }, Math.floor(Date.now() / 1000) + lifetime, flags);
         });
     },
 
@@ -114,10 +114,13 @@ let mc = {
         console.log(`after closed = ${closed}`);
     },
 
-    start(){
+    start(succ){
         (async () => {
             let connected = await this.connect();
             console.log(`memcache is connected ${connected}`);
+            if(succ){
+                succ(connected);
+            }
         })();
         console.log(`memcache called start()`);
     }
