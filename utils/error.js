@@ -14,6 +14,18 @@ MyError.assertType = (v, type, msg) => {
     }
 }
 
+MyError.assertBool = (v, msg) => {
+    if(typeof(v) != 'boolean' && (v != 'true' && v != 'false')){
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} muset be boolean`);
+    }
+}
+
+MyError.assertNumber = (v, msg) => {
+    if(typeof(v) != 'number' && (typeof(v) == 'string' && parseFloat(v) == NaN)){
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} must convert to number`);
+    }
+}
+
 MyError.assertValue = (v, v1, msg) => {
     if(v != v1){
         throw new MyError(MyError.codes.invalidParams, msg || `${v} != ${v1}`);

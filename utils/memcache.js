@@ -70,13 +70,17 @@ let mc = {
                 reject(new Error(Error.codes.memcache.noConnect, 'no connect'));
                 return;
             }
+            let exptime = 0;
+            if(typeof(lifetime) == 'number' && lifetime > 0){
+                exptime = Math.floor(Date.now() / 1000) + lifetime;
+            }
             this.client.set(key, JSON.stringify({value}), (err, result) => {
                 if(err){
                     reject(err);
                 }else{
                     resolve(result);
                 }
-            }, Math.floor(Date.now() / 1000) + lifetime, flags);
+            }, exptime, flags);
         });
     },
 

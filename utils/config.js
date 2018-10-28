@@ -27,12 +27,17 @@ let mysql = {
     port: 3306
 }
 
+let gamerecord = {
+    limit: 10
+}
+
 let config = {
     wx,
     ssl,
     server,
     memcache,
     mysql,
+    gamerecord,
     isDebug: true
 }
 

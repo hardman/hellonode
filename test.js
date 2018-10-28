@@ -47,12 +47,21 @@ function testTool(){
     }, 3000);
 }
 
+async function testRecord(){
+    memcache.start()
+    setTimeout(async ()=>{
+        let record = require('./models/record');
+        await record.test();
+    }, 3000);
+}
+
 //测试代码都写在test函数内
 let test = () => {
     // testAsync();
     // testMemcache();
     // console.log(process);
-    testTool()
+    // testTool()
+    testRecord()
 }
 
 module.exports = {

@@ -75,5 +75,8 @@ memcache.start((connected) => {
     if(connected){
         let toolModel = require('./models/tool');
         toolModel.initTool();
+
+        let achieveModel = require('./models/achieve');
+        achieveModel.initAchieveConfig();
     }
 });
