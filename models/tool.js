@@ -169,7 +169,7 @@ let getAllTools = async (uid) => {
             des: v.toolconfig.des,
             count: v.count
         }
-    })
+    });
 }
 
 //使用道具

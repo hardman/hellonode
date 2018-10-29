@@ -1,7 +1,46 @@
 //游戏记录 存memcache
+const Sequelize = require('sequelize');
+const sequelize = require('../utils/sequelize');
 const Error = require('../utils/error');
 const memcache = require('../utils/memcache');
 const config = require('../utils/config');
+
+/**
+ create table if not exists summaryrecords(
+     uid varchar(50) primary key unique key not null,
+     duration int not null,
+     level int not null,
+     combo int not null,
+     round int not null
+ )
+ */
+
+let summaryRecordModel = sequelize.define('summaryrecords', {
+    uid:{
+        type: Sequelize.STRING(50),
+        primaryKey: true,
+        unique: true,
+        allowNull: false
+    },
+    duration:{
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    level: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    combo: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    round:{
+        type: Sequelize.INTEGER,
+        allowNull: false
+    }
+},{
+    timestamps: false
+});
 
 let getSummaryRecord = async function(uid){
     let record = null;
@@ -9,36 +48,51 @@ let getSummaryRecord = async function(uid){
         record = await memcache.get(`gamesummaryrecord_${uid}`);
     }catch(e){}
 
+    if(!record){
+        record = await summaryRecordModel.findOne({
+            where:{
+                uid
+            }
+        });
+
+        if(record){
+            await memcache.set(`gamesummaryrecord_${uid}`, record, 86400);
+        }
+    }
+
     return record;
 }
 
 let addSummaryRecord = async function(record){
     let summaryRecord = await getSummaryRecord(record.uid);
     if(!summaryRecord){
-        summaryRecord = record;
-    }else{
-        let level = parseInt(summaryRecord.level);
-        let duration = level / parseFloat(summaryRecord.speed);
-        level += parseInt(record.level);
-        let newDuration = record.level * parseFloat(record.speed) + duration;
-        let newSpeed = level / newDuration;
-        let newRound = summaryRecord.round ? parseInt(summaryRecord.round) + 1: 1;
-        let newRecord = {
+        summaryRecord = {
             uid: record.uid,
-            duration: `${newDuration.toFixed(2)}`,
-            speed: `${newSpeed.toFixed(2)}`,
-            level: `${level}`,
-            combo: `${parseInt(summaryRecord.combo) + parseInt(record.combo)}`,
-            round: `${newRound}`
-        }
-        summaryRecord = newRecord;
+            combo: record.combo,
+            level: record.level,
+            duration: record.duration,
+            round: 1
+        };
+        await summaryRecordModel.create(summaryRecord);
+    }else{
+        let level = summaryRecord.level + record.level;
+        let duration = summaryRecord.duration + record.duration;
+        let round = summaryRecord.round + 1;
+        let combo = summaryRecord.combo + record.combo;
+        summaryRecord = {
+            duration,
+            level,
+            combo,
+            round
+        };
+        await summaryRecordModel.update(summaryRecord, {
+            where:{
+                uid: record.uid
+            }
+        });
     }
-    try{
-        await memcache.set(`gamesummaryrecord_${record.uid}`, summaryRecord);
-        return true;
-    }catch(e){
-        return false;
-    }
+
+    await memcache.set(`gamesummaryrecord_${record.uid}`, summaryRecord, 86400);
 }
 
 let getRecentlyRecords = async function(uid){
@@ -52,7 +106,7 @@ let getRecentlyRecords = async function(uid){
     return null;
 }
 
-let createRecord = async function(uid, speed, level, combo){
+let createRecord = async function(uid, duration, level, combo){
     let records = await getRecentlyRecords(uid);
     if(!Array.isArray(records)){
         records = [];
@@ -60,7 +114,7 @@ let createRecord = async function(uid, speed, level, combo){
     if(records.length >= 10){
         records.shift();
     }
-    let newRecord = {uid, speed, level, combo};
+    let newRecord = {uid, duration: parseInt(duration), level: parseInt(level), combo: parseInt(combo)};
     records.push(newRecord);
     try{
         await memcache.set(`gamerecentlyrecord_${uid}`, records);
