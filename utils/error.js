@@ -50,6 +50,15 @@ MyError.assertValueExist = (v, msg) => {
     }
 }
 
+MyError.assertValueIn = (v, arr, msg) => {
+    if(!Array.isArray(arr)){
+        throw  new MyError(MyError.codes.invalidParams, `v=${v}, arr=${v} msg=${msg}`);
+    }
+    if(!arr.includes(v)){
+        throw  new MyError(MyError.codes.invalidParams, msg || `${v} == undefined`);
+    }
+}
+
 MyError.prototype[Symbol.toString] = function () {
     console.log(`code=${this.code}, msg=${this.msg} ${this.ext ? this.ext : ''}`);
 }
@@ -62,6 +71,7 @@ MyError.codes = {
         requestFrenquently: 402,//请求频繁
         notFound: 404,//未找到
         notEnough:405,//数量不足
+        ignore:406,//忽略请求
         internalError: 500,//内部错误
     },
     login: {
