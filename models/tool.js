@@ -59,11 +59,13 @@ let getAllToolConfigs = async () => {
     }catch(e){
         //do nothing
     }
-    allToolConfigs = await toolConfig.findAll();
-    if(Array.isArray(allToolConfigs) && allToolConfigs.length > 0){
-        await memcache.set(cacheKey, allToolConfigs);
-    }else{
-        allToolConfigs = null;
+    if(!allToolConfigs){
+        allToolConfigs = await toolConfig.findAll();
+        if(Array.isArray(allToolConfigs) && allToolConfigs.length > 0){
+            await memcache.set(cacheKey, allToolConfigs);
+        }else{
+            allToolConfigs = null;
+        }
     }
     return allToolConfigs;
 }

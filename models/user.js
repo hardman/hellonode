@@ -47,13 +47,15 @@ let userModel = sequelize.define('user', {
 });
 
 //查找用户
-let findUser = async (uid) => {
+let findUser = async (uid, useCache) => {
     console.log(`查找用户uid=${uid}`);
     let user = null;
-    try{
-        user = await memcache.get(uid);
-    }catch(e){
-        //do nothing
+    if(useCache){
+        try{
+            user = await memcache.get(uid);
+        }catch(e){
+            //do nothing
+        }
     }
     if(!user){
         try{
@@ -66,8 +68,10 @@ let findUser = async (uid) => {
             //do nothing
         }
 
-        if(user){
-            await memcache.set(uid, user);
+        if(useCache){
+            if(user){
+                await memcache.set(uid, user);
+            }
         }
     }
     return user;
@@ -101,7 +105,7 @@ let createUser = async (uid, {nickName, avatarUrl, gender, language, city, provi
 }
 
 //修改信息
-let updateUser = async (uid, {nickName, avatarUrl, gender, language, city, province, country}) => {
+let updateUser = async (uid, {nickName, avatarUrl, gender, language, city, province, country}, useCache) => {
     console.log(`更新用户uid=${uid}`);
     let user = await findUser(uid);
     if(!user){
@@ -152,11 +156,13 @@ let updateUser = async (uid, {nickName, avatarUrl, gender, language, city, provi
         }
     });
 
-    if(Array.isArray(newUser)){
-        if(newUser[0] == 1){
-            newUser = await findUser(uid);
-            if(newUser){
-                await memcache.set(uid, newUser);
+    if(useCache){
+        if(Array.isArray(newUser)){
+            if(newUser[0] == 1){
+                newUser = await findUser(uid);
+                if(newUser){
+                    await memcache.set(uid, newUser);
+                }
             }
         }
     }

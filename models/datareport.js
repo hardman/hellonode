@@ -1,8 +1,6 @@
 //成就
 const Sequelize = require('sequelize');
 const sequelize = require('../utils/sequelize');
-const Error = require('../utils/error');
-const memcache = require('../utils/memcache');
 
 const CLICK = 1;//点击
 const EXPOSURE = 2;//曝光

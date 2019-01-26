@@ -42,11 +42,13 @@ let summaryRecordModel = sequelize.define('summaryrecords', {
     timestamps: false
 });
 
-let getSummaryRecord = async function(uid){
+let getSummaryRecord = async function(uid, useCache){
     let record = null;
-    try{
-        record = await memcache.get(`gamesummaryrecord_${uid}`);
-    }catch(e){}
+    if(useCache){
+        try{
+            record = await memcache.get(`gamesummaryrecord_${uid}`);
+        }catch(e){}
+    }
 
     if(!record){
         record = await summaryRecordModel.findOne({
@@ -55,15 +57,17 @@ let getSummaryRecord = async function(uid){
             }
         });
 
-        if(record){
-            await memcache.set(`gamesummaryrecord_${uid}`, record, 86400);
+        if(useCache){
+            if(record){
+                await memcache.set(`gamesummaryrecord_${uid}`, record, 86400);
+            }
         }
     }
 
     return record;
 }
 
-let addSummaryRecord = async function(record){
+let addSummaryRecord = async function(record, useCache){
     let summaryRecord = await getSummaryRecord(record.uid);
     if(!summaryRecord){
         summaryRecord = {
@@ -92,7 +96,9 @@ let addSummaryRecord = async function(record){
         });
     }
 
-    await memcache.set(`gamesummaryrecord_${record.uid}`, summaryRecord, 86400);
+    if(useCache){
+        await memcache.set(`gamesummaryrecord_${record.uid}`, summaryRecord, 86400);
+    }
 }
 
 let getRecentlyRecords = async function(uid){
