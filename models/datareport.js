@@ -45,14 +45,25 @@ let datareportModel = sequelize.define('datareport', {
     timestamps: false
 })
 
-let report = async function(type, model, info, ext){
+let report = async function(type, model, info, ext, time){
     let object = await datareportModel.create({
         type, model, info, ext,
-        createat: Date.now()
+        createat: time ? time: Date.now()
     });
-    console.log(`object = ${object}`);
+    console.log(`datareport.report object = ${object}`);
+}
+
+let reportMulti = async function(datas){
+    let now = Date.now();
+    datas.forEach((v) => {
+        v.createat = v.time ? v.time: now;
+        v.time = undefined;
+    });
+    let ret = await datareportModel.bulkCreate(datas);
+    console.log(`datareport.reportMulti datas = ${ret}`);
 }
 
 module.exports = {
-    report
+    report,
+    reportMulti
 }

@@ -14,6 +14,12 @@ MyError.assertType = (v, type, msg) => {
     }
 }
 
+MyError.assertArray = (v, msg) => {
+    if(!Array.isArray(v)){
+        throw new MyError(MyError.codes.invalidParams, msg || `${v} muset be array object`);
+    }
+}
+
 MyError.assertBool = (v, msg) => {
     if(typeof(v) != 'boolean' && (v != 'true' && v != 'false')){
         throw new MyError(MyError.codes.invalidParams, msg || `${v} muset be boolean`);
