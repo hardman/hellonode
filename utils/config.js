@@ -16,7 +16,7 @@ let memcache = {
 }
 
 let server = {
-    port: 80
+    port: 3000
 }
 
 let mysql = {
