@@ -46,6 +46,8 @@ let userModel = sequelize.define('user', {
     timestamps: false
 });
 
+userModel.sync();
+
 //查找用户
 let findUser = async (uid, useCache) => {
     console.log(`查找用户uid=${uid}`);
@@ -192,6 +194,8 @@ let loginModel = sequelize.define('logininfo', {
 },{
     timestamps: false
 });
+
+loginModel.sync();
 
 //登录记录
 let loginRecord = async(uid) => {

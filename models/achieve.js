@@ -29,6 +29,8 @@ let achieveConfigModel = sequelize.define('achieveconfigs', {
     timestamps: false
 });
 
+achieveConfigModel.sync();
+
 let createAchieveCfgItem = async function (id, level, name){
     try{
         await achieveConfigModel.create({

@@ -42,6 +42,8 @@ let summaryRecordModel = sequelize.define('summaryrecords', {
     timestamps: false
 });
 
+summaryRecordModel.sync();
+
 let getSummaryRecord = async function(uid, useCache){
     let record = null;
     if(useCache){

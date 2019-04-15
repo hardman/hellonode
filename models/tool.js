@@ -37,6 +37,8 @@ let toolConfig = sequelize.define('toolconfig', {
     timestamps: false
 });
 
+toolConfig.sync();
+
 //增加道具
 let addToolConfig = async (toolid, name, des) => {
     try{
@@ -110,6 +112,8 @@ let toolInfo = sequelize.define('toolinfo', {
 });
 
 toolInfo.belongsTo(toolConfig, {foreignKey: 'toolid', targetKey: 'toolid'});
+
+toolInfo.sync();
 
 //获取道具
 let getTool = async (uid, toolid) => {

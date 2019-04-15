@@ -45,6 +45,8 @@ let datareportModel = sequelize.define('datareport', {
     timestamps: false
 })
 
+datareportModel.sync();
+
 let report = async function(type, model, info, ext, time){
     let object = await datareportModel.create({
         type, model, info, ext,
