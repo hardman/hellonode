@@ -15,15 +15,17 @@ const memcache = require('./utils/memcache');
 const app = new Koa();
 
 //0. 允许跨域
-let cors = require('koa2-cors');
-app.use(cors({
-    origin: (ctx) => {
-        return "http://localhost:7456";
-    },
-    credentials: true,
-    exposeHeaders: ["sessionkey", "removesessionkey"],
-    allowHeaders: ["sessionkey", "removesessionkey"]
-}));
+if(config.isDebug){
+    let cors = require('koa2-cors');
+    app.use(cors({
+        origin: (ctx) => {
+            return "http://awstar.cn:7456";
+        },
+        credentials: true,
+        exposeHeaders: ["sessionkey", "removesessionkey"],
+        allowHeaders: ["sessionkey", "removesessionkey"]
+    }));
+}
 
 const errorHandle = require('./midwares/errorHandle');
 
