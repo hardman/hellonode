@@ -4,6 +4,7 @@ const Error = require('../utils/error');
 const User = require('../models/user');
 const config = require('../utils/config');
 const loginSession = require('../utils/loginSession');
+const memcached = require('../utils/memcache');
 
 /**
  * 微信登录会传入临时code，用临时code通过微信接口获取session_key和openid
@@ -21,25 +22,53 @@ let _loginFailed = (ctx, code, msg) => {
 
 let _loginSucc = async (ctx, openid) => {
 	if(openid){
+		let cachedId = 'userinfo' + openid;
+		let user = null
+		try{
+			user = await memcached.get(cachedId);
+		}catch(e){}
+
 		//更新数据库 & 返回数据信息
-		let user = await User.findUser(openid);
 		let reqBody = ctx.request.body;
 		if(!user){
-			let createParams = Object.assign({createat: Date.now(), updatedat: Date.now()}, reqBody);
-			user = await User.createUser(openid, createParams);
+			if(!user){
+				user = await User.findUser(openid);
+			}
+			if(!user){
+				let createParams = Object.assign({createat: Date.now(), updatedat: Date.now()}, reqBody);
+				user = await User.createUser(openid, createParams);
+			}
 		}else{
 			//检查是否需要update
-			let updateUser = null;
-			try{
-				updateUser = await User.updateUser(openid, reqBody);
-			}catch(e){
-				//do nothing
+
+			const diffContent = {};
+			var needUpdate = false;
+			for (const key in reqBody) {
+				if (reqBody.hasOwnProperty(key) && user.hasOwnProperty(key)) {
+					if(reqBody[key] != user[key]){
+						diffContent[key] = reqBody[key];
+						needUpdate = true;
+					}
+				}
 			}
-			if(updateUser){
-				user = updateUser;
+
+			if(needUpdate){
+				let updateUser = null;
+				try{
+					updateUser = await User.updateUser(openid, reqBody);
+				}catch(e){
+					//do nothing
+				}
+				if(updateUser){
+					user = updateUser;
+				}
 			}
 		}
 		if(user){
+			//存到memcached中
+			try{
+				await memcached.set(cachedId, user, 7 * 24 * 60 * 60);
+			}catch(e){}
 			//登录记录
 			await User.loginRecord(openid);
 			//返回给客户端
@@ -139,7 +168,18 @@ let getUserInfo = async (ctx, next) => {
 
 	let openid = await loginSession.getOpenId(ctx);
 
-	let user = await User.findUser(openid);
+	let cachedId = 'userinfo' + openid;
+
+	let user = null;
+	try{
+	    user = await memcached.get(cachedId);
+	}catch(e){}
+	if(!user){
+		user = await User.findUser(openid);
+		try{
+			await memcached.set(cachedId, user);
+		}catch(e){}
+	}
 
 	if(user){
 		ctx.response.body = response.succ(user, 'ok');

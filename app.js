@@ -19,7 +19,7 @@ if(config.isDebug){
     let cors = require('koa2-cors');
     app.use(cors({
         origin: (ctx) => {
-            return "http://awstar.cn:7456";
+            return "http://192.168.1.4:7456";
         },
         credentials: true,
         exposeHeaders: ["sessionkey", "removesessionkey"],

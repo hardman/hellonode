@@ -22,7 +22,7 @@ let UseSession = {
 		ctx.session.session_key = sessionkeyMd5;
 	
 		//openid存储在memcache中
-		await memcache.set(sessionkeyMd5, openid, 86400); //24 * 60 * 60 * 1000)
+		await memcache.set(sessionkeyMd5, openid, 86400); //24 * 60 * 60
 	},
 	
 	async removeSession(ctx) {
