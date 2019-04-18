@@ -6,7 +6,7 @@ const Error = require('../utils/error');
 //创建user表
 /*
 create table if not exists users( 
-    id int not null auto_increment primary key,
+    id int auto_increment primary key,
     uid varchar(50) not null unique key,
     username varchar(100) not null,
     avatar varchar(256),
@@ -27,13 +27,17 @@ let userModel = sequelize.define('user', {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-        defaultValue:0
+        allowNull:true
     },
     uid: {
         type: Sequelize.STRING(50),
-        unique: true
+        unique: true,
+        allowNull: false
     },
-    username:Sequelize.STRING(100),
+    username:{
+        type:Sequelize.STRING(100),
+        allowNull: false
+    },
     avatar: Sequelize.STRING(256),
     gender: Sequelize.TINYINT,
     language: Sequelize.STRING(16),
