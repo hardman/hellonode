@@ -25,7 +25,8 @@ create table if not exists users(
 let userModel = sequelize.define('user', {
     id: {
         type: Sequelize.INTEGER,
-        primaryKey: true
+        primaryKey: true,
+        autoIncrement: true
     },
     uid: {
         type: Sequelize.STRING(50),

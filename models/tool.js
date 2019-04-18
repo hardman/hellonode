@@ -92,8 +92,7 @@ let toolInfo = sequelize.define('toolinfo', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
-        defaultValue: 0
+        autoIncrement: true
     },
     uid:{
         type: Sequelize.STRING(50),
