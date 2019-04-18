@@ -26,7 +26,8 @@ let userModel = sequelize.define('user', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true
+        autoIncrement: true,
+        defaultValue:0
     },
     uid: {
         type: Sequelize.STRING(50),
