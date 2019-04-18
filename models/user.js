@@ -93,6 +93,7 @@ let createUser = async (uid, {nickName, avatarUrl, gender, language, city, provi
         return user;
     }
     user = await userModel.create({
+        id:0,
         uid,
         username: nickName,
         avatar: avatarUrl,
