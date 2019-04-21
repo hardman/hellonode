@@ -38,7 +38,7 @@ let config = {
     memcache,
     mysql,
     gamerecord,
-    isDebug: true
+    isDebug: false
 }
 
 module.exports = config;

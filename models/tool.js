@@ -21,7 +21,7 @@ let toolConfig = sequelize.define('toolconfig', {
         autoIncrement: true
     },
     toolid: {
-        type: Sequelize.STRING(10),
+        type: Sequelize.STRING(16),
         allowNull: false,
         unique: true
     },

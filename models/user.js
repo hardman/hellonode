@@ -93,7 +93,6 @@ let createUser = async (uid, {nickName, avatarUrl, gender, language, city, provi
         return user;
     }
     user = await userModel.create({
-        id:0,
         uid,
         username: nickName,
         avatar: avatarUrl,
@@ -104,7 +103,7 @@ let createUser = async (uid, {nickName, avatarUrl, gender, language, city, provi
         country,
         createdat: Date.now(),
         updatedat: Date.now()
-    });
+    },{fields:["uid","username","avatar","gender","language","city","province","country","createdat","updatedat"]});
 
     if(user){
         user = await findUser(uid);
