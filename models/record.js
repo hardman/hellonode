@@ -10,7 +10,9 @@ const config = require('../utils/config');
      uid varchar(50) primary key unique key not null,
      duration int not null,
      level int not null,
+     maxlevel int not null,
      combo int not null,
+     maxcombo int not null,
      round int not null
  )
  */
@@ -30,7 +32,16 @@ let summaryRecordModel = sequelize.define('summaryrecords', {
         type: Sequelize.INTEGER,
         allowNull: false
     },
+    maxlevel: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+        allowNull: false
+    },
     combo: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    maxcombo: {
         type: Sequelize.INTEGER,
         allowNull: false
     },
@@ -75,12 +86,22 @@ let addSummaryRecord = async function(record, useCache){
         summaryRecord = {
             uid: record.uid,
             combo: record.combo,
+            maxcombo: record.maxcombo,
             level: record.level,
+            maxlevel: record.level,
             duration: record.duration,
             round: 1
         };
         await summaryRecordModel.create(summaryRecord);
     }else{
+        let maxlevel = summaryRecord.maxlevel;
+        if(record.level > maxlevel){
+            maxlevel = record.level;
+        }
+        let maxcombo = summaryRecord.maxcombo;
+        if(record.maxcombo > maxcombo){
+            maxcombo = record.maxcombo;
+        }
         let level = summaryRecord.level + record.level;
         let duration = summaryRecord.duration + record.duration;
         let round = summaryRecord.round + 1;
@@ -88,7 +109,9 @@ let addSummaryRecord = async function(record, useCache){
         summaryRecord = {
             duration,
             level,
+            maxlevel,
             combo,
+            maxcombo,
             round
         };
         await summaryRecordModel.update(summaryRecord, {
@@ -114,7 +137,7 @@ let getRecentlyRecords = async function(uid){
     return null;
 }
 
-let createRecord = async function(uid, duration, level, combo){
+let createRecord = async function(uid, duration, level, combo, maxcombo){
     let records = await getRecentlyRecords(uid);
     if(!Array.isArray(records)){
         records = [];
@@ -122,7 +145,7 @@ let createRecord = async function(uid, duration, level, combo){
     if(records.length >= 10){
         records.shift();
     }
-    let newRecord = {uid, duration: parseInt(duration), level: parseInt(level), combo: parseInt(combo)};
+    let newRecord = {uid, duration: parseInt(duration), level: parseInt(level), combo: parseInt(combo), maxcombo: parseInt(maxcombo)};
     records.push(newRecord);
     try{
         await memcache.set(`gamerecentlyrecord_${uid}`, records);

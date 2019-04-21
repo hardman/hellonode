@@ -21,14 +21,14 @@ let getSummaryRecord = async (ctx, next) => {
     ctx.response.body = response.succ(record, 'ok');
 }
 
-let getRecords = async (ctx, next) => {
+let getRecentlyRecords = async (ctx, next) => {
     if(!await loginSession.isLogin(ctx)){
         ctx.response.body = response.error(Error.codes.server.needLogin, '需要登录');
         return;
     }
 
     let uid = await loginSession.getOpenId(ctx);
-    let records = await recordModel.getRecords(uid);
+    let records = await recordModel.getRecentlyRecords(uid);
     if(Array.isArray(records)){
         records = records.map((item) => {
             return {
@@ -49,7 +49,8 @@ let createRecord = async (ctx, next) => {
     Error.assertNumber(ctx.request.body.duration,  'duration could be converted to number');
     Error.assertNumber(ctx.request.body.level, 'level could be converted to number');
     Error.assertNumber(ctx.request.body.combo, 'combo could be converted to number');
-    if(await recordModel.createRecord(uid, ctx.request.body.duration, ctx.request.body.level, ctx.request.body.combo)){
+    Error.assertNumber(ctx.request.body.maxcombo, 'maxcombo could be converted to number');
+    if(await recordModel.createRecord(uid, ctx.request.body.duration, ctx.request.body.level, ctx.request.body.combo, ctx.request.body.maxcombo)){
         ctx.response.body = response.succ(null, 'ok');
     }else{
         ctx.response.body = response.error(Error.codes.server.internalError, '创建游戏记录失败');
@@ -58,6 +59,6 @@ let createRecord = async (ctx, next) => {
 
 module.exports = {
     'GET /getgamesummaryrecord': getSummaryRecord,
-    'GET /getgamerecords': getRecords,
+    'GET /getgamerecentlyrecords': getRecentlyRecords,
     'POST /creategamerecord': createRecord
 }
